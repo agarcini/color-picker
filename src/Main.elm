@@ -74,7 +74,6 @@ colorPicker model =
                 , y "0"
                 , width "100%"
                 , height "100%"
-                , Svg.Attributes.style "position:absolute;top:0;left:0;"
                 ]
                 []
             , rect
@@ -83,7 +82,6 @@ colorPicker model =
                 , y "0"
                 , width "100%"
                 , height "100%"
-                , Svg.Attributes.style "position:absolute;top:0;left:0;"
                 ]
                 []
             ]
