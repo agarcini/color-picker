@@ -38,18 +38,71 @@ view model =
                 ]
             ]
             []
-        , if model.hasFocus == True then
-            roundRect model
+          --, if model.hasFocus == True then
+        , if True then
+            colorPicker model
           else
             text ""
         ]
 
 
-roundRect : Model -> Html.Html msg
-roundRect model =
-    svg
-        [ width "120", height "120", viewBox "0 0 120 120", Svg.Attributes.style "position:absolute;top:100%;left:0" ]
-        [ rect [ fill model.color, x "10", y "10", width "100", height "100", rx "15", ry "15" ] [] ]
+colorPicker : Model -> Html.Html msg
+colorPicker model =
+    div
+        [ Html.Attributes.style
+            [ ( "position", "absolute" )
+            , ( "top", "100%" )
+            , ( "left", "0" )
+            , ( "box-shadow", "0 0 3px 0" )
+            ]
+        ]
+        [ svg
+            [ width "200", height "120", viewBox "0 0 200 120" ]
+            [ defs []
+                [ linearGradient [ Svg.Attributes.id "saturationGradient" ]
+                    [ stop [ offset "0%", stopColor "#fff" ] []
+                    , stop [ offset "100%", stopColor model.color ] []
+                    ]
+                , linearGradient [ Svg.Attributes.id "blacknessGradient", x1 "0", x2 "0", y1 "0", y2 "1" ]
+                    [ stop [ offset "0%", stopColor "rgba(0,0,0,0)" ] []
+                    , stop [ offset "100%", stopColor "#000" ] []
+                    ]
+                ]
+            , rect
+                [ fill "url(#saturationGradient)"
+                , x "0"
+                , y "0"
+                , width "100%"
+                , height "100%"
+                , Svg.Attributes.style "position:absolute;top:0;left:0;"
+                ]
+                []
+            , rect
+                [ fill "url(#blacknessGradient)"
+                , x "0"
+                , y "0"
+                , width "100%"
+                , height "100%"
+                , Svg.Attributes.style "position:absolute;top:0;left:0;"
+                ]
+                []
+            ]
+        , svg
+            [ width "30", height "120", viewBox "0 0 30 120" ]
+            [ defs []
+                [ linearGradient [ Svg.Attributes.id "hueGradient", x1 "0", x2 "0", y1 "0", y2 "1" ]
+                    [ stop [ offset "0%", stopColor "#F00" ] []
+                    , stop [ offset "16.666666%", stopColor "#FF0" ] []
+                    , stop [ offset "33.333333%", stopColor "#0F0" ] []
+                    , stop [ offset "50%", stopColor "#0FF" ] []
+                    , stop [ offset "66.666666%", stopColor "#00F" ] []
+                    , stop [ offset "83.333333%", stopColor "#F0F" ] []
+                    , stop [ offset "100%", stopColor "#F00" ] []
+                    ]
+                ]
+            , rect [ fill "url(#hueGradient)", x "0", y "0", width "100%", height "100%" ] []
+            ]
+        ]
 
 
 update : Msg -> Model -> Model
