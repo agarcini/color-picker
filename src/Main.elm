@@ -5,6 +5,9 @@ import Html.Attributes exposing (type_, value, style)
 import Html.Events exposing (onInput, onFocus, onBlur)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import ColorPicker.Styles exposing (css, CssClasses(..))
+import Html.CssHelpers
+import Css
 
 
 initialModel : Model
@@ -20,41 +23,43 @@ type alias Model =
     }
 
 
+{ id, class, classList } =
+    Html.CssHelpers.withNamespace "colorPicker"
+{ css } =
+    Css.compile [ ColorPicker.Styles.css ]
+
+
 view : Model -> Html Msg
 view model =
-    div
-        [ Html.Attributes.style [ ( "position", "relative" ) ]
-        ]
-        [ input
-            [ Html.Attributes.type_ "text"
-            , value model.color
-            , onInput TextChanged
-            , onFocus InputFocused
-            , onBlur InputBlurred
-            , Html.Attributes.style
-                [ ( "border", "none" )
-                , ( "border-right", "solid 20px " ++ model.color )
-                , ( "box-shadow", "0 0 0 1px rgba(0,0,0,0.1)" )
-                ]
+    div []
+        [ Html.node "style" [] [ Html.text css ]
+        , div
+            [ class [ Container ]
             ]
-            []
-          --, if model.hasFocus == True then
-        , if True then
-            colorPicker model
-          else
-            text ""
+            [ input
+                [ Html.Attributes.type_ "text"
+                , class [ ColorInput ]
+                , value model.color
+                , onInput TextChanged
+                , onFocus InputFocused
+                , onBlur InputBlurred
+                , Html.Attributes.style
+                    [ ( "border-right", "solid 20px " ++ model.color ) ]
+                ]
+                []
+              --, if model.hasFocus == True then
+            , if True then
+                colorPicker model
+              else
+                text ""
+            ]
         ]
 
 
 colorPicker : Model -> Html.Html msg
 colorPicker model =
     div
-        [ Html.Attributes.style
-            [ ( "position", "absolute" )
-            , ( "top", "100%" )
-            , ( "left", "0" )
-            , ( "box-shadow", "0 0 3px 0" )
-            ]
+        [ class [ ColorPopUp ]
         ]
         [ svg
             [ width "200", height "120", viewBox "0 0 200 120" ]
