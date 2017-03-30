@@ -42,6 +42,7 @@ css =
             , top (pct 100)
             , left (px 0)
             , boxShadow4 (px 0) (px 0) (px 3) (px 0)
+            , cursor crosshair
             ]
         ]
 

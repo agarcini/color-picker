@@ -79,10 +79,20 @@ colorPicker model =
         ]
 
 
+coordinateToColor : Model -> String
+coordinateToColor model =
+    case model.y of
+        Nothing ->
+            model.color
+
+        Just y ->
+            "hsl(" ++ toString ((y / popUpHeight) * 360) ++ ", 100%, 50%)"
+
+
 hueGradient : Model -> Html Msg
 hueGradient model =
     svg
-        [ width (toString popUpWidth), height (toString popUpHeight), viewBox ("0 0 " ++ (toString popUpWidth) ++ " " ++ (toString popUpHeight)), ColorPicker.Events.onMouseMove HueMouseMoved ]
+        [ width (toString popUpWidth), height (toString popUpHeight), viewBox ("0 0 " ++ (toString popUpWidth) ++ " " ++ (toString popUpHeight)), ColorPicker.Events.onMouseEvent HueMouseMoved ]
         [ defs []
             [ linearGradient [ Svg.Attributes.id "hueGradient", x1 "0", x2 "0", y1 "0", y2 "1" ]
                 [ stop [ offset "0%", stopColor "#F00" ] []
@@ -105,7 +115,7 @@ saturationGradient model =
         [ defs []
             [ linearGradient [ Svg.Attributes.id "saturationGradient" ]
                 [ stop [ offset "0%", stopColor "#fff" ] []
-                , stop [ offset "100%", stopColor model.color ] []
+                , stop [ offset "100%", stopColor (coordinateToColor model) ] []
                 ]
             , linearGradient [ Svg.Attributes.id "blacknessGradient", x1 "0", x2 "0", y1 "0", y2 "1" ]
                 [ stop [ offset "0%", stopColor "rgba(0,0,0,0)" ] []
@@ -148,7 +158,10 @@ update msg model =
                 _ =
                     Debug.log "point" point
             in
-                { model | y = Just point.y }
+                if point.button == 1 then
+                    { model | y = Just point.y }
+                else
+                    model
 
 
 type Msg
