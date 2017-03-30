@@ -34,6 +34,7 @@ css =
             ]
         , class ColorInput
             [ borderStyle none
+            , borderRight2 (px 40) solid
             , boxShadow5 (px 0) (px 0) (px 0) (px 1) (rgba 0 0 0 0.1)
             ]
         , class ColorPopUp
