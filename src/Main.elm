@@ -15,14 +15,18 @@ initialModel : Model
 initialModel =
     { color = "#CCC"
     , hasFocus = False
-    , y = Nothing
+    , hueY = Nothing
+    , satX = Nothing
+    , satY = Nothing
     }
 
 
 type alias Model =
     { color : String
     , hasFocus : Bool
-    , y : Maybe Float
+    , hueY : Maybe Float
+    , satX : Maybe Float
+    , satY : Maybe Float
     }
 
 
@@ -37,9 +41,14 @@ popUpHeight =
     120
 
 
-popUpWidth : number
-popUpWidth =
+hueWidth : number
+hueWidth =
     30
+
+
+saturationWidth : number
+saturationWidth =
+    200
 
 
 view : Model -> Html Msg
@@ -79,20 +88,58 @@ colorPicker model =
         ]
 
 
-coordinateToColor : Model -> String
-coordinateToColor model =
-    case model.y of
+hueYCoordToColor : Model -> String
+hueYCoordToColor model =
+    case model.hueY of
         Nothing ->
             model.color
 
         Just y ->
-            "hsl(" ++ toString ((y / popUpHeight) * 360) ++ ", 100%, 50%)"
+            let
+                pct =
+                    y / popUpHeight * 100
+            in
+                "rgb(" ++ red pct ++ "," ++ green pct ++ "," ++ blue pct ++ ")"
+
+
+
+--red pct =
+
+
+satCoordToColor : Model -> String
+satCoordToColor model =
+    case ( model.satX, model.satY, model.hueY ) of
+        ( Nothing, _, _ ) ->
+            model.color
+
+        ( _, Nothing, _ ) ->
+            model.color
+
+        ( _, _, Nothing ) ->
+            model.color
+
+        ( Just x, Just y, Just hueY ) ->
+            let
+                hue =
+                    toString ((hueY / popUpHeight) * 360)
+
+                saturation =
+                    toString ((x / saturationWidth) * 100)
+
+                lightness =
+                    toString (100 - ((y / popUpHeight) * 100))
+            in
+                "hsl(" ++ hue ++ ", " ++ saturation ++ "%, " ++ lightness ++ "%)"
 
 
 hueGradient : Model -> Html Msg
 hueGradient model =
     svg
-        [ width (toString popUpWidth), height (toString popUpHeight), viewBox ("0 0 " ++ (toString popUpWidth) ++ " " ++ (toString popUpHeight)), ColorPicker.Events.onMouseEvent HueMouseMoved ]
+        [ width (toString hueWidth)
+        , height (toString popUpHeight)
+        , viewBox ("0 0 " ++ (toString hueWidth) ++ " " ++ (toString popUpHeight))
+        , ColorPicker.Events.onMouseEvent HueMouseDragged
+        ]
         [ defs []
             [ linearGradient [ Svg.Attributes.id "hueGradient", x1 "0", x2 "0", y1 "0", y2 "1" ]
                 [ stop [ offset "0%", stopColor "#F00" ] []
@@ -111,11 +158,15 @@ hueGradient model =
 saturationGradient : Model -> Html Msg
 saturationGradient model =
     svg
-        [ width "200", height "120", viewBox "0 0 200 120" ]
+        [ width (toString saturationWidth)
+        , height (toString popUpHeight)
+        , viewBox ("0 0 " ++ (toString saturationWidth) ++ " " ++ (toString popUpHeight))
+        , ColorPicker.Events.onMouseEvent SaturationMouseDragged
+        ]
         [ defs []
             [ linearGradient [ Svg.Attributes.id "saturationGradient" ]
                 [ stop [ offset "0%", stopColor "#fff" ] []
-                , stop [ offset "100%", stopColor (coordinateToColor model) ] []
+                , stop [ offset "100%", stopColor (hueYCoordToColor model) ] []
                 ]
             , linearGradient [ Svg.Attributes.id "blacknessGradient", x1 "0", x2 "0", y1 "0", y2 "1" ]
                 [ stop [ offset "0%", stopColor "rgba(0,0,0,0)" ] []
@@ -153,22 +204,29 @@ update msg model =
         InputBlurred ->
             { model | hasFocus = False }
 
-        HueMouseMoved point ->
-            let
-                _ =
-                    Debug.log "point" point
-            in
-                if point.button == 1 then
-                    { model | y = Just point.y }
-                else
-                    model
+        HueMouseDragged point ->
+            if point.button == 1 then
+                { model | hueY = Just point.y }
+            else
+                model
+
+        SaturationMouseDragged point ->
+            if point.button == 1 then
+                let
+                    updatedModel =
+                        { model | satX = Just point.x, satY = Just point.y }
+                in
+                    { updatedModel | color = satCoordToColor updatedModel }
+            else
+                model
 
 
 type Msg
     = TextChanged String
     | InputFocused
     | InputBlurred
-    | HueMouseMoved ColorPicker.Events.Point
+    | HueMouseDragged ColorPicker.Events.Point
+    | SaturationMouseDragged ColorPicker.Events.Point
 
 
 main : Program Never Model Msg
